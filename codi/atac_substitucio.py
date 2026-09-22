@@ -42,7 +42,7 @@ def mostrar_freq(freq_cripto):
         part_k = ""
         if i < len(cripto_ordenat):
             ll, (ab, rel) = cripto_ordenat[i]
-            part_c = f"  {ll:>4}   {ab:>4}  {rel:>5.1f}%"
+            part_c = f"  {ll:>4}   {ab:>4}  {rel:>6.2f}%"
         else:
             part_c = " " * 22
         if i < len(catala_ordenat):
