@@ -1,85 +1,93 @@
 import re
 import sys
 
-# Maximum size of the grams to search; the flag --max N changes it (default 5)
-MAX_GRAM = 5
+# Mida màxima dels grams a cercar; l'opció --max N la canvia (per defecte 5)
+MAX_GRAMA = 5
 
-filename = None
-max_size = MAX_GRAM
+nom_arxiu = None
+mida_maxima = MAX_GRAMA
 i = 1
 while i < len(sys.argv):
     if sys.argv[i] == "--max":
-        max_size = int(sys.argv[i + 1])
+        mida_maxima = int(sys.argv[i + 1])
         i += 2
     else:
-        filename = sys.argv[i]
+        nom_arxiu = sys.argv[i]
         i += 1
 
-cryptogram = open(filename, "r").read()
+if nom_arxiu is None:
+    print("Us: python analitza.py [--max N] criptograma.txt")
+    sys.exit(1)
 
-# If the cryptogram contains numbers (cryptogram B), each number is one symbol;
-# otherwise each letter is one symbol (cryptograms A and C)
-if re.search(r"\d", cryptogram):
-    symbols = re.findall(r"\d+", cryptogram)
+criptograma = open(nom_arxiu, "r").read()
+
+# Si el criptograma conté nombres (criptograma B), cada nombre és un símbol;
+# altrament cada lletra és un símbol (criptogrames A i C)
+if re.search(r"\d", criptograma):
+    simbols = re.findall(r"\d+", criptograma)
 else:
-    symbols = [c.upper() for c in cryptogram if c.isalpha()]
+    simbols = [c.upper() for c in criptograma if c.isalpha()]
 
-# Count the frequency of each symbol in the cryptogram
+# Comptar la freqüència de cada símbol del criptograma
 frequencies = {}
-for symbol in symbols:
-    if symbol in frequencies:
-        frequencies[symbol] += 1
+for simbol in simbols:
+    if simbol in frequencies:
+        frequencies[simbol] += 1
     else:
-        frequencies[symbol] = 1
+        frequencies[simbol] = 1
 
-# Calculate the total length of the cryptogram
-length = len(symbols)
+# Calcular la longitud total del criptograma
+longitud = len(simbols)
 
-# Sort the frequencies in descending order
-sorted_frequencies = sorted(frequencies.items(), key=lambda x: x[1], reverse=True)
+# Ordenar les freqüències en ordre descendent
+frequencies_ordenades = sorted(frequencies.items(), key=lambda x: x[1], reverse=True)
 
-# Most frequent symbols
-most_frequent = [symbol for symbol, _ in sorted_frequencies[:10]]
+# Símbols més freqüents
+mes_frequents = [simbol for simbol, _ in frequencies_ordenades[:10]]
 
-# Index of coincidence
-ic = sum(count * (count - 1) for count in frequencies.values()) / (
-    length * (length - 1)
+# Índex de coincidència
+ic = sum(vegades * (vegades - 1) for vegades in frequencies.values()) / (
+    longitud * (longitud - 1)
 )
 
-# Repeated bigrams, trigrams and longer grams, with their positions and the
-# distances between consecutive occurrences
-repetitions = {}
-for size in range(2, max_size + 1):
-    positions = {}
-    for i in range(length - size + 1):
-        gram = tuple(symbols[i : i + size])
-        positions.setdefault(gram, []).append(i)
+# Bigrames, trigrames i grams més llargs repetits, amb les seves posicions i les
+# distàncies entre ocurrències consecutives
+repeticions = {}
+for mida in range(2, mida_maxima + 1):
+    posicions = {}
+    for i in range(longitud - mida + 1):
+        grama = tuple(simbols[i : i + mida])
+        posicions.setdefault(grama, []).append(i)
 
-    repetitions[size] = [
-        (gram, hits) for gram, hits in positions.items() if len(hits) >= 2
+    repeticions[mida] = [
+        (grama, trobades)
+        for grama, trobades in posicions.items()
+        if len(trobades) >= 2
     ]
-    repetitions[size].sort(key=lambda x: (-len(x[1]), x[0]))
+    repeticions[mida].sort(key=lambda x: (-len(x[1]), x[0]))
 
-# Summary statistics
-print(f"Total cryptogram length: {length}")
-print(f"Number of different symbols: {len(frequencies)}")
-print(f"Index of coincidence: {ic:.4f}")
-print(f"Most frequent symbols: {' '.join(most_frequent)}")
+# Resum estadístic
+print(f"Longitud total del criptograma: {longitud}")
+print(f"Nombre de simbols diferents: {len(frequencies)}")
+print(f"Index de coincidencia: {ic:.4f}")
+print(f"Simbols mes frequents: {' '.join(mes_frequents)}")
 
-# Detailed information: frequency table
-print("\nFrequency table (symbol | count | relative frequency):")
-for symbol, count in sorted_frequencies:
-    print(f"{symbol} | {count} | {count / length:.2%}")
+# Taula de freqüències
+print("\nTaula de frequencies (simbol | vegades | frequencia relativa):")
+for simbol, vegades in frequencies_ordenades:
+    print(f"{simbol} | {vegades} | {vegades / longitud:.2%}")
 
-# Detailed information: repeated bigrams, trigrams and longer grams
-print("\nRepeated grams (gram | occurrences | positions | distances):")
-for size in range(2, max_size + 1):
-    for gram, hits in repetitions[size]:
-        distances = [hits[j + 1] - hits[j] for j in range(len(hits) - 1)]
-        if all(len(symbol) == 1 for symbol in gram):
-            gram_text = "".join(gram)
+# Grams repetits
+print("\nGrames repetits (grama | ocurrencies | posicions | distancies):")
+for mida in range(2, mida_maxima + 1):
+    for grama, trobades in repeticions[mida]:
+        distancies = [
+            trobades[j + 1] - trobades[j] for j in range(len(trobades) - 1)
+        ]
+        if all(len(simbol) == 1 for simbol in grama):
+            grama_text = "".join(grama)
         else:
-            gram_text = " ".join(gram)
+            grama_text = " ".join(grama)
         print(
-            f"[{size}-gram] {gram_text!r} | {len(hits)} | {hits} | {distances}"
+            f"[{mida}-gram] {grama_text!r} | {len(trobades)} | {trobades} | {distancies}"
         )

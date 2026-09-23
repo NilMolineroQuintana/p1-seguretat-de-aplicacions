@@ -4,29 +4,29 @@ import os
 from collections import Counter
 
 # --- Llegir arguments ---
-parser = argparse.ArgumentParser(description="Atac assistit a substitució")
-parser.add_argument('filename')
+parser = argparse.ArgumentParser(description="Atac assistit a substitucio")
+parser.add_argument('criptograma')
 args = parser.parse_args()
 
 # --- Llegir criptograma ---
-text: str = open(args.filename, "r").read().upper().strip()
-solo_letras = [c for c in text if c.isalpha()]
+text: str = open(args.criptograma, "r").read().upper().strip()
+nomes_lletres = [c for c in text if c.isalpha()]
 
 # --- Llegir freqüències del català ---
 freq_catala = {}
-csv_path = os.path.join(os.path.dirname(__file__), "freqüencies", "catala.csv")
-with open(csv_path, "r") as f:
+csv_path = os.path.join(os.path.dirname(__file__), "frequencies", "catala.csv")
+with open(csv_path, "r", encoding="utf-8") as f:
     reader = csv.DictReader(f)
     for row in reader:
         freq_catala[row["lletra"]] = float(row["frequencia"])
 
 # --- Calcular freqüències del criptograma ---
-def calcular_freq(letras):
-    total = len(letras)
-    comptador = Counter(letras)
+def calcular_freq(lletres):
+    total = len(lletres)
+    comptador = Counter(lletres)
     freq = {}
-    for lletra, count in comptador.most_common():
-        freq[lletra] = (count, count / total * 100)
+    for lletra, vegades in comptador.most_common():
+        freq[lletra] = (vegades, vegades / total * 100)
     return freq
 
 # --- Mostrar freqüències comparades ---
@@ -34,7 +34,7 @@ def mostrar_freq(freq_cripto):
     catala_ordenat = sorted(freq_catala.items(), key=lambda x: -x[1])
     cripto_ordenat = sorted(freq_cripto.items(), key=lambda x: -x[1][1])
 
-    print("\n  CRIPTOGRAMA              CATALÀ")
+    print("\n  CRIPTOGRAMA              CATALA")
     print("  Lletra  Abs   Rel%       Lletra  Rel%")
     print("  " + "-" * 40)
     for i in range(max(len(cripto_ordenat), len(catala_ordenat))):
@@ -67,19 +67,19 @@ def mostrar_text(text, subs):
 # --- Mostrar substitucions actuals ---
 def mostrar_subs(subs):
     if not subs:
-        print("\n  (cap substitució definida)")
+        print("\n  (cap substitucio definida)")
         return
     print("\n  Substitucions actuals:")
     for orig, dest in sorted(subs.items()):
         print(f"    {orig} -> {dest}")
 
 # --- Bucle principal ---
-freq_cripto = calcular_freq(solo_letras)
+freq_cripto = calcular_freq(nomes_lletres)
 subs = {}  # clau original -> lletra desxifrada
 
 print("=" * 50)
-print("  ASSISTENT DE CRIPTOANÀLISI")
-print("  Substitució monoalfabètica")
+print("  ASSISTENT DE CRIPTOANALISI")
+print("  Substitucio monoalfabetica")
 print("=" * 50)
 
 mostrar_freq(freq_cripto)
@@ -90,8 +90,8 @@ while True:
 
     print("\nComandes:")
     print("  X Y   -> substituir X per Y")
-    print("  -X    -> eliminar substitució de X")
-    print("  freq  -> mostrar freqüències")
+    print("  -X    -> eliminar substitucio de X")
+    print("  freq  -> mostrar frequencies")
     print("  q     -> sortir")
 
     entrada = input("\n> ").strip().upper()
@@ -104,9 +104,9 @@ while True:
         lletra = entrada[1]
         if lletra in subs:
             del subs[lletra]
-            print(f"  Eliminada substitució de {lletra}")
+            print(f"  Eliminada substitucio de {lletra}")
         else:
-            print(f"  {lletra} no té substitució")
+            print(f"  {lletra} no te substitucio")
     elif len(entrada.split()) == 2:
         parts = entrada.split()
         orig, dest = parts[0], parts[1]
