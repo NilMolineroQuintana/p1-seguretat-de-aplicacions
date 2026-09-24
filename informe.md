@@ -88,3 +88,17 @@ Hem redactat un text original de `91` paraules, que usant `xifrar.py` hem xifrat
 El programa `xifrar.py` elimina accents, espais i signes de puntuació abans de xifrar, com exigeix la modalitat B, mostra el text xifrat en grups de 8 lletres i comprova automàticament que el desxifrat recupera el text original.
 
 ### 4.2 L'atac
+
+El text xifrat que ens ha proporcionat és del grup format per:
+- Aleix Ràfols
+- Samuel Gumà
+
+El criptograma es troba dins de `CLASSE.txt`. En primer lloc, vam passar-lo pel nostre script d'anàlisi i vam observar que l'índex de coincidència era de `0.0429`, valor clarament allunyat del IC del català i proper al valor aleatori, cosa que indicava un xifratge polialfabètic. A més, el nombre de caràcters únics del criptograma era exactament `26` i l'histograma de freqüències presentava una distribució força aplanada, sense els pics característics d'una substitució monoalfabètica. Tot plegat ens va fer deduir que es tractava d'un xifratge de Vigenère.
+
+Vam executar `atac_vigenere.py` amb el criptograma com a argument, però el resultat va ser un text inintel·ligible amb la clau `KUMAN`. En examinar les estadístiques generades pel propi atac, vam observar que els períodes candidats eren tots múltiples de `5`. El nostre codi original triava sempre el menor dels candidats, tot i que l'IC no s'aproximés prou al del català. Vam provar aleshores amb longitud `10`, que era la que presentava un IC més proper al català, i efectivament el programa va recuperar la clau correcta i el text completament desxifrat. Arran d'això, vam modificar el codi d'atac per tal que seleccioni com a longitud candidata la que té l'IC més semblant al del català, en lloc de la mínima.
+
+La clau era `TUTANKAMON` i el text desxifrat aquest:
+
+```
+LA TARDOR PORTA DIES CURTS I FREDS A LA PLAÇA DEL POBLE ELS NENS JUGUEN SENSE PARAR FINS QUE ES FA FOSC JUGANT AMB CINC XIQUES I FENT BROMES EL PALLASSO DE VIC PERD LA QUALITAT DEL XOU LES FAMILIES SURTEN A PASSEJAR PEL PARC I COMPREN PA CALENTA LA FLECA DEL CANTO LA NOSTRA AVIA FA SOPA DE VERDURES MENTRES ESCOLTA LA RADIO I FIX VICTOR PUJA DALT I QUAN SES FONDRA EL LLARG CAMI TROBA PERLES I JOIES DEMA SERA UN ALTRE DIA TRANQUIL I PLE DE PETITES ALEGRIES QUOTIDIAN ESPERA TOTHOM
+```
