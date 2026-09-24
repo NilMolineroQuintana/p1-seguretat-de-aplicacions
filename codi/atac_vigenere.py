@@ -100,11 +100,10 @@ def embolica(text, ample):
 def tria_periode_fonamental(candidats, ics):
     if not candidats:
         return None
-    candidats = sorted(candidats)
-    base = candidats[0]
-    if all(c % base == 0 for c in candidats):
-        return base
-    return max(candidats, key=lambda k: ics[k])
+    millor = max(candidats, key=lambda k: ics[k])
+    llindar = 0.85 * ics[millor]
+    grans = sorted(k for k in candidats if ics[k] >= llindar)
+    return grans[0]
 
 
 def main():

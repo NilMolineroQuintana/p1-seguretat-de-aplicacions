@@ -5,6 +5,10 @@
 
 ## Tasca 1
 
+### 1.1. Programa d'anàlisi
+
+Hem preparat `analitza.py`, que rep el criptograma per argument (i opcionalment `--max N`) i calcula: la longitud del criptograma, el nombre de símbols diferents, les freqüències absolutes i relatives de cada símbol, els símbols més freqüents, l'índex de coincidència i les repeticions de bigrames, trigrames i grams més llargs amb les posicions i les distàncies entre ocurrències. Si el criptograma conté nombres (el B), cada nombre es tracta com un símbol; si només conté lletres, cada lletra ho és.
+
 ### 1.2 Classificació
 
 #### A.txt
@@ -59,7 +63,7 @@ Hem implementat l'atac a `atac_vigenere.py`, que rep únicament el criptograma p
 - **Kasiski:** el programa busca trigrames repetits, calcula les distàncies entre ocurrències i n'obté els divisors compatibles. Al criptograma C detecta `34` distàncies amb mcd = `1` (poc informatiu per si sol), però entre els divisors compatibles hi apareixen `7` i `14`, coherents amb un període `7`.
 - **Índex de coincidència:** per a cada `k` d'1 a 20 es calcula l'IC mitjà de les `k` columnes. Quan `k` coincideix amb la longitud real de la clau, cada columna es comporta com un xifratge de Cèsar i l'IC s'aproxima al del català (≈ `0.07`); en canvi, per a valors incorrectes es manté a prop del valor aleatori (≈ `0.038`).
 
-Al criptograma C, per a `k = 7` l'IC mitjà és `0.0696` i per a `k = 14` és `0.0673`; tots dos superen el llindar. Com que `14 = 2 × 7`, la segona candidatura és un múltiple de la primera: el programa no es limita a prendre el màxim de l'IC, sinó que interpreta el resultat i busca el **període fonamental**, que en aquest cas és `7`, tal com exigeix l'enunciat.
+Al criptograma C, per a `k = 7` l'IC mitjà és `0.0696` i per a `k = 14` és `0.0673`; tots dos superen el llindar de candidatura. Com que `14 = 2 × 7`, la segona candidatura és un múltiple de la primera: el programa no es limita a prendre el màxim de l'IC, sinó que entre les candidates escull la més petita amb un IC ≥ 85 % del màxim, que és el **període fonamental**; en aquest cas, `7`, tal com exigeix l'enunciat.
 
 Amb la longitud fixada, separem el text en 7 columnes i analitzem cada una com un xifratge de Cèsar independent: provem els 26 desplaçaments i escollim el que millor fa coincidir les freqüències de la columna desxifrada amb les freqüències reals del català (provinents de `frequencies/catala.csv`), minimitzant la suma de diferències absolutes entre les dues distribucions. Això recupera la clau:
 
