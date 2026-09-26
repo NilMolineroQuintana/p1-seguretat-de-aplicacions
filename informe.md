@@ -1,19 +1,17 @@
 # Pràctica 1
-## Grup: Guillem Alcoverro, Nil Molinero
-
----
+**Grup:** Guillem Alcoverro, Nil Molinero
 
 ## Tasca 1
 
 ### 1.1. Programa d'anàlisi
 
-Hem preparat `analitza.py`, que rep el criptograma per argument (i opcionalment `--max N`) i calcula: la longitud del criptograma, el nombre de símbols diferents, les freqüències absolutes i relatives de cada símbol, els símbols més freqüents, l'índex de coincidència i les repeticions de bigrames, trigrames i grams més llargs amb les posicions i les distàncies entre ocurrències. Si el criptograma conté nombres (el B), cada nombre es tracta com un símbol; si només conté lletres, cada lletra ho és.
+Hem preparat `analitza.py`, que rep el criptograma per argument (i opcionalment `--max N`) i calcula: la longitud del criptograma, el nombre de símbols diferents, les freqüències absolutes i relatives de cada símbol, els símbols més freqüents, l'índex de coincidència i les repeticions de bigrames, trigrames i grams més llargs amb les posicions i les distàncies entre ocurrències. Si el criptograma conté nombres (com per exemple el text B.txt), cada nombre es tracta com un símbol; si només conté lletres, cada lletra ho és.
 
 ### 1.2 Classificació
 
 #### A.txt
 
-A simple vista i executant el programa d'anàlisi `analitza.py` que hem preparat pensem que pot ser una substitució monoalfabètica.
+A simple vista i executant el programa d'anàlisi `analitza.py` que hem preparat pensem que pot ser una **substitució monoalfabètica**.
 
 L'índex de coincidència calculat és de `0.0726`, cosa que s'aproxima molt al valor esperat per a un text en català (~0.072–0.078). Si fos un xifratge polialfabètic com Vigenère, l'IC tendria a baixar cap a ~0.038. Això indica que la distribució de freqüències del text original es conserva intacta, fet característic d'una substitució monoalfabètica.
 
@@ -22,6 +20,12 @@ A més, el criptograma conté només `22` símbols diferents d'un alfabet de 26 
 En aquest cas pensem que l'atac més adient per a desxifrar aquest text serà basar-nos en l'anàlisi de freqüències i comparar-lo directament amb les freqüències de lletres més comunes en català, mirant bigrames, trigrames, paraules curtes, i poc a poc anar deduint les substitucions fins a resoldre el xifratge.
 
 #### B.txt
+
+En executar `analitza.py` veiem que el criptograma fa servir `58` símbols diferents, tots ells codis numèrics de dos dígits, i les paraules estan separades pel caràcter `/`. Com que l'alfabet del català només té `26` lletres, una substitució monoalfabètica simple és impossible: cal que dos o més codis diferents representin la mateixa lletra. A més l'IC sembla massa baix per a ser Vigenere per tant creiem que és un text xifrat amb una **substitució homofónica**.
+
+L'índex de coincidència dels `58` símbols és de `0.0189`, pràcticament el valor aleatori per a un alfabet d'aquesta mida i molt lluny del `0.073` esperat per al català. Si fos una substitució monoalfabètica (26 símbols), l'IC conservaria el perfil del llenguatge original; el fet que caigui fins al nivell aleatori confirma que cada lletra s'ha repartit entre diversos codis, aplanant completament la distribució de freqüències.
+
+A més, l'histograma de símbols és gairebé pla: el codi més freqüent (`10`) apareix `13` vegades (`4.32%`) i el menys freqüent (`25`) només `1` vegada (`0.33%`), amb una diferència entre el màxim i el mínim de menys de `4` punts percentuals. En una substitució monoalfabètica com la del criptograma A, la lletra més freqüent (`Z`) representava el `12.99%` i la menys freqüent no arribava a l'`1%`, un rang molt més ampli que permetia comparar directament amb les freqüències del català. Aquí, en canvi, cap codi destaca prou perquè un atac de freqüències individuals sigui viable; cal aprofitar la informació lingüística que el xifratge no ha esborrat, com la longitud de cada paraula (els `/` separen paraules), les paraules curtes, els patrons de repetició de bigrames (per exemple `56 11` apareix `4` vegades) i la coherència del text parcialment desxifrat.
 
 #### C.txt
 
@@ -43,18 +47,8 @@ Amb aquestes primeres substitucions ja podíem reconèixer fragments del text, i
 
 Però no totes les hipòtesis van ser correctes a la primera. El símbol `I` era el tercer més freqüent del criptograma (8.35%) i, segons les freqüències del català, podia correspondre tant a `S` com a `R`; vam provar primer `I→R`. El trigrama repetit `ZYI` quedava com "ENR" i la paraula `VOTIIUVT` com "CLARRICA", cap dels dos amb aspecte de català. En canvi, amb `I→S` aquestes mateixes paraules es convertien en "ENS" i "CLASSICA", paraules reals i coherents amb el context. Veure el text parcial actualitzat després de cada canvi va fer tant trivial detectar l'error com validar la correcció. El text final recuperat és:
 
-```
-LA CRIPTOGRAFIA CLASSICA ENS ENSENYA UNA LLICO IMPORTANT
-UN ESPAI DE CLAUS MOLT GRAN NO GARANTEIX SEGURETAT SI EL
-XIFRATGE CONSERVA PROU ESTRUCTURA DEL LLENGUATGE UN
-ATACANT POT EXPLOTAR LES REGULARITATS ESTADISTIQUES EN
-UNA SUBSTITUCIO MONOALFABETICA PER EXEMPLE CADA LLETRA
-DEL TEXT ORIGINAL ES TRANSFORMA SEMPRE EN EL MATEIX
-SIMBOL AIXO CONSERVA LES FREQUENCIES ELS PATRONS I
-MOLTES DEPENDENCIES ENTRE LLETRES UN BON CRIPTOANALISTA
-NO BUSCA NOMES LA CLAU BUSCA INFORMACIO QUE EL SISTEMA
-HA DEIXAT ESCAPAR
-```
+>LA CRIPTOGRAFIA CLÀSSICA ENS ENSENYA UNA LLIÇÓ IMPORTANT UN ESPAI DE CLAUS MOLT GRAN NO GARANTEIX SEGURETAT SI EL XIFRATGE CONSERVA PROU ESTRUCTURA DEL LLENGUATGE UN ATACANT POT EXPLOTAR LES REGULARITATS ESTADÍSTIQUES EN UNA SUBSTITUCIÓ MONOALFABÈTICA PER EXEMPLE CADA LLETRA DEL TEXT ORIGINAL ES TRANSFORMA SEMPRE EN EL MATEIX SÍMBOL AIXÒ CONSERVA LES FREQÜÈNCIES ELS PATRONS I MOLTES DEPENDÈNCIES ENTRE LLETRES UN BON CRIPTOANALISTA NO BUSCA NOMÉS LA CLAU BUSCA INFORMACIÓ QUE EL SISTEMA HA DEIXAT ESCAPAR
+
 
 ### 2.2 Atac al criptograma C
 
@@ -73,9 +67,25 @@ Clau candidata: MONTSEC
 
 Els desplaçaments triats per a cada posició (`M`, `O`, `N`, `T`, `S`, `E`, `C`) tenen una diferència de freqüències clarament inferior a la de les alternatives, cosa que confirma la clau. El text original recuperat és:
 
-> QUAN UN XIFRAT POLIALFABÈTIC UTILITZA UNA CLAU PERIÒDICA, LA DISTRIBUCIÓ GLOBAL DE FREQÜÈNCIES ES POT APROPAR MOLT MÉS A UNA DISTRIBUCIÓ UNIFORME. AIXÒ FA QUE L'ANÀLISI DIRECTA SIGUI MENYS EFICAÇ. PERÒ LA PERIODICITAT DE LA CLAU INTRODUEIX UNA NOVA REGULARITAT: SI SEPAREM LES POSICIONS DEL CRIPTOGRAMA SEGONS LA SEVA POSICIÓ MÒDUL LA LONGITUD DE LA CLAU, CADA SUBSEQÜÈNCIA ES COMPORTA COM UN XIFRAT DE CÈSAR. AQUESTA IDEA PERMET COMBINAR KASISKI, ÍNDEX DE COINCIDÈNCIA I ANÀLISI DE FREQÜÈNCIES PER RECUPERAR LA CLAU.
+>QUAN UN XIFRAT POLIALFABÈTIC UTILITZA UNA CLAU PERIÒDICA, LA DISTRIBUCIÓ GLOBAL DE FREQÜÈNCIES ES POT APROPAR MOLT MÉS A UNA DISTRIBUCIÓ UNIFORME. AIXÒ FA QUE L'ANÀLISI DIRECTA SIGUI MENYS EFICAÇ. PERÒ LA PERIODICITAT DE LA CLAU INTRODUEIX UNA NOVA REGULARITAT: SI SEPAREM LES POSICIONS DEL CRIPTOGRAMA SEGONS LA SEVA POSICIÓ MÒDUL LA LONGITUD DE LA CLAU, CADA SUBSEQÜÈNCIA ES COMPORTA COM UN XIFRAT DE CÈSAR. AQUESTA IDEA PERMET COMBINAR KASISKI, ÍNDEX DE COINCIDÈNCIA I ANÀLISI DE FREQÜÈNCIES PER RECUPERAR LA CLAU.
 
 L'atac és gairebé automàtic: només cal passar-li el criptograma i el programa proposa la longitud, la clau i restitueix les `428` lletres del text. L'única part que requereix interpretació humana és validar la clau candidata escollida entre les alternatives mostrades. El text s'ha presentat més amunt reintroduint a mà espais, accents i puntuació perquè es pugui llegir; el programa retorna només lletres seguides.
+
+### 2.3 Atac al criptograma B
+
+Hem implementat `atac_homofonic.py`, una eina d'atac manual molt semblant a la que vam fer servir per al criptograma A però adaptada per a símbols numèrics. El script està basat en un programa del nostre company Asier que hem adaptat i integrat al nostre flux de treball.
+
+Com hem explicat a la classificació, un atac basat únicament en les freqüències individuals dels símbols no funciona aquí: l'histograma és gairebé pla perquè cada lletra es reparteix entre diversos codis, de manera que cap codi destaca prou per poder-lo assignar directament a una lletra freqüent del català. Ara bé, el xifratge homofònic no esborra tota l'estructura del llenguatge: els separadors `/` conserven els límits entre paraules i, per tant, les longitudes de cada paraula i els patrons de repetició es mantenen intactes.
+
+Vam començar per les paraules més curtes del criptograma i anar avançant cap a les més llargues per facilitar-nos la feina: una paraula d'un sol símbol té molt poques candidates en català (articles o preposicions com "A", "I", "O"), i una de tres en té moltes més però encara asequibles. La primera paraula, `19 28 54`, consta de tres símbols. En català, una paraula de tres lletres molt habitual al principi d'una frase és "ELS", així que vam provar `19→E`, `28→L` i `54→S`. Amb aquestes tres substitucions, altres fragments del text parcialment desxifrat ja van començar a tenir sentit, i vam anar estenent les hipòtesis: `51→D` per completar paraules que semblaven "DEL" o "DE", `09→E` i `44→L` com a segons homòfons d'E i L respectivament.
+
+A diferència de l'atac al criptograma A, aquí vam cometre un error de bloc important. Després de les primeres substitucions vam intentar assignar ràpidament diversos codis: `36→Q`, `37→U`, `05→U`, `56→E`, `11→L`, `60→L`, `59→N`, `49→A` i `10→A`. Cap d'aquestes hipòtesis produïa fragments coherents, i el text parcial no s'assemblava a cap frase en català, de manera que vam haver d'eliminar les nou substitucions i tornar enrere.
+
+Una vegada revertits aquests canvis vam reprendre l'atac de forma més prudent. Primer vam fixar els codis de les lletres més freqüents a partir del context: `62→D`, `42→E`, `10→S`, `46→E`, `39→N`, `07→A`, `12→T`. A continuació, el símbol `49` ens va donar problemes: vam provar primer `49→N`, després `49→A`, i finalment `49→S` va ser l'única opció que feia que paraules com "DIVERSOS" i "SIMBOLS" tinguessin sentit. Amb prou lletres ja visibles, la resta de substitucions les vam deduir pel context de les paraules parcialment desxifrades: `36→I`, `37→M`, `56→B`, `11→O`, i així fins a completar les `58` assignacions.
+
+En total, l'atac ha requerit `85` accions (substitucions i eliminacions). La clau de l'èxit no ha estat l'anàlisi de freqüències que aquí es molt poc efectiu, sinó la combinació de la longitud de les paraules, els patrons de repetició i la coherència lingüística del text parcialment desxifrat. El text original recuperat és:
+
+>ELS XIFRATS HOMOFONICS INTENTEN DIFICULTAR L'ANALISI DE FREQUENCIES ASSIGNANT DIVERSOS SIMBOLS A LES LLETRES MES HABITUALS SI LA TRIA DEL SIMBOL ES PROU ALEATORIA LES FREQUENCIES DELS SIMBOLS INDIVIDUALS PODEN QUEDAR MOLT MES REPARTIDES AIXO NO ELIMINA TOTA L'ESTRUCTURA DEL LLENGUATGE PERO OBLIGA L'ATACANT A BUSCAR RELACIONS MES RIQUES ENTRE ELS SIMBOLS
 
 ## Tasca 3
 
@@ -86,6 +96,10 @@ L'atac és gairebé automàtic: només cal passar-li el criptograma i el program
 Hem redactat un text original de `91` paraules, que usant `xifrar.py` hem xifrat amb la clau `CRIPTOGRAFIA`.
 
 El programa `xifrar.py` elimina accents, espais i signes de puntuació abans de xifrar, com exigeix la modalitat B, mostra el text xifrat en grups de 8 lletres i comprova automàticament que el desxifrat recupera el text original.
+
+El nostre text original era el següent:
+
+>Si esteu llegint aquest text significa que ho heu aconseguit aquest text ha estat redactat pel grup format per Guillem Alcoverro i Nil Molinero per veure si el grup que ho ha de desxifrar ho aconsegueix aquest text estara xifrat en Vigenere amb una clau definida per nosaltres mateixos us recomanem analitzar be la frequencia de les lletres i cercar possibles patrons repetits per descobrir la paraula secreta esperem que el grup assignat tingui molta sort i apliqui bones tecniques d'analisi i aconsegueixi esbrinar tots els detalls d'aquest tipus de xifratge
 
 ### 4.2 L'atac
 
@@ -99,6 +113,6 @@ Vam executar `atac_vigenere.py` amb el criptograma com a argument, però el resu
 
 La clau era `TUTANKAMON` i el text desxifrat aquest:
 
-```
-LA TARDOR PORTA DIES CURTS I FREDS A LA PLAÇA DEL POBLE ELS NENS JUGUEN SENSE PARAR FINS QUE ES FA FOSC JUGANT AMB CINC XIQUES I FENT BROMES EL PALLASSO DE VIC PERD LA QUALITAT DEL XOU LES FAMILIES SURTEN A PASSEJAR PEL PARC I COMPREN PA CALENTA LA FLECA DEL CANTO LA NOSTRA AVIA FA SOPA DE VERDURES MENTRES ESCOLTA LA RADIO I FIX VICTOR PUJA DALT I QUAN SES FONDRA EL LLARG CAMI TROBA PERLES I JOIES DEMA SERA UN ALTRE DIA TRANQUIL I PLE DE PETITES ALEGRIES QUOTIDIAN ESPERA TOTHOM
-```
+>LA TARDOR PORTA DIES CURTS I FREDS A LA PLAÇA DEL POBLE ELS NENS JUGUEN SENSE PARAR FINS QUE ES FA FOSC JUGANT AMB CINC XIQUES I FENT BROMES EL PALLASSO DE VIC PERD LA QUALITAT DEL XOU LES FAMILIES SURTEN A PASSEJAR PEL PARC I COMPREN PA CALENTA LA FLECA DEL CANTO LA NOSTRA AVIA FA SOPA DE VERDURES MENTRES ESCOLTA LA RADIO I FIX VICTOR PUJA DALT I QUAN SES FONDRA EL LLARG CAMI TROBA PERLES I JOIES DEMA SERA UN ALTRE DIA TRANQUIL I PLE DE PETITES ALEGRIES QUOTIDIAN ESPERA TOTHOM
+
+## Conclusions

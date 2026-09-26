@@ -2,7 +2,7 @@
 
 ## 1. Per a què l'hem utilitzada
 
-Hem usat l'IA en diferents programes del lliurament i en la redacció de l'informe: per estructurar el codi, depurar-lo, fer-lo més robust a partir de les nostres versions inicials i revisar-ne el disseny.
+Hem usat l'IA en diferents programes del lliurament i en la redacció de l'informe: per estructurar el codi, depurar-lo, fer-lo més robust a partir de les nostres versions inicials i revisar-ne el disseny. També l'hem utilitzada a l'hora d'anar dexifrant poc a poc el xifrat del text `B.txt` preguntant quines paraules podrien encaixar en diversos fragments del text que es trobava a mitjes.
 
 ## 2. Fragment acceptat
 
