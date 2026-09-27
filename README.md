@@ -25,6 +25,8 @@
     ├── atac_substitucio.py     # Atac assistit a substitució monoalfabètica
     ├── atac_vigenere.py        # Atac automàtic a Vigenère
     ├── atac_homofonic.py       # Atac assistit a substitució homofònica
+    ├── original_ia.py          # Codi original proposat per la IA (fase 3)
+    ├── corregit_ia.py          # Codi corregit i millorat de la IA (fase 3)
     ├── xifrar.py               # Xifratge de Vigenère (fase 4)
     └── frequencies/
         └── catala.csv          # Freqüències de lletres en català
@@ -136,3 +138,20 @@ python xifrar.py
 ```
 
 > **Nota:** la clau i el text estan definits directament dins del fitxer. Per canviar-los, editeu les variables `clau` i `text` al final del script.
+
+---
+
+### 6. Programes de la fase 3 (Auditoria de la IA)
+
+- **`original_ia.py`**: Codi original proposat per la IA per atacar Vigenère.
+  ```bash
+  python original_ia.py ../criptogrames/C.txt
+  ```
+
+- **`corregit_ia.py`**: Versió corregida i robusta que soluciona els problemes de la IA.
+  ```bash
+  python corregit_ia.py ../criptogrames/C.txt
+  ```
+
+
+

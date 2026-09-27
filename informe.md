@@ -87,7 +87,69 @@ En total, l'atac ha requerit `85` accions (substitucions i eliminacions). La cla
 
 >ELS XIFRATS HOMOFONICS INTENTEN DIFICULTAR L'ANALISI DE FREQUENCIES ASSIGNANT DIVERSOS SIMBOLS A LES LLETRES MES HABITUALS SI LA TRIA DEL SIMBOL ES PROU ALEATORIA LES FREQUENCIES DELS SIMBOLS INDIVIDUALS PODEN QUEDAR MOLT MES REPARTIDES AIXO NO ELIMINA TOTA L'ESTRUCTURA DEL LLENGUATGE PERO OBLIGA L'ATACANT A BUSCAR RELACIONS MES RIQUES ENTRE ELS SIMBOLS
 
-## Tasca 3
+## Tasca 3: Auditoria d'un programa generat per IA
+
+Hem auditat el programa d'atac automàtic a Vigenère proposat per la intel·ligència artificial. El codi original s'ha guardat a `codi/original_ia.py` i la versió corregida a `codi/corregit_ia.py`.
+
+### 3.1 Entendre abans de jutjar
+
+El programa de la IA divideix l'atac en set funcions:
+
+1. **`neteja(text)`**: Filtra caràcters no alfabètics i passa a majúscules. Assumeix un text format únicament per les 26 lletres de l'alfabet anglès (A–Z).
+2. **`index_coincidencia(text)`**: Calcula l'IC ($\frac{\sum f_i(f_i-1)}{n(n-1)}$). Es basa en el fet que un text monoalfabètic en llenguatge natural té un IC alt (~0.07 pel català) a causa dels pics de freqüència, mentre que un text polialfabètic s'aplana cap a la distribució uniforme (~0.038).
+3. **`longitud_clau(text, maxim=20)`**: Divideix el text en $k$ columnes (`text[i::k]`) i tria el $k$ amb major IC mitjà. Assumeix que quan $k$ és la longitud de la clau, cada columna esdevé un xifratge monoalfabètic de Cèsar i el seu IC assoleix el valor del llenguatge natural.
+4. **`desplacament_columna(col)`**: Extreu el caràcter més comú de la columna i en calcula la distància a la 'E'. Assumeix cegament que la lletra més freqüent de qualsevol columna monoalfabètica és sempre la 'E'.
+5. **`troba_clau(text, k)`**: Aplica `desplacament_columna` a cadascuna de les $k$ columnes per separat, assumint que cada component de la clau es pot resoldre de forma aïllada.
+6. **`desxifra(text, clau)`**: Aplica la resta modular $m_i = (c_i - k_i) \pmod{26}$, implementant el desxifrat clàssic de Vigenère.
+7. **`ataca(text)`**: Enllaça tot el flux assumint que l'atac pot ser 100% autònom sense necessitat d'intervenció humana ni ajust lingüístic.
+
+### 3.2 Buscar problemes
+
+Hem identificat tres problemes greus en el codi de la IA:
+
+#### 1. Fallada durant l'execució (Crash per `ZeroDivisionError` i `IndexError`)
+A `index_coincidencia`, el denominador `n * (n - 1)` dóna zero si $n \le 1$. Com que `longitud_clau` itera fixament fins a $k=20$, qualsevol text de menys de 40 caràcters genera columnes de longitud 0 o 1 i fa fallar el programa amb una divisió per zero:
+```python
+ataca("HOLA")  # ZeroDivisionError: division by zero
+```
+A més, si una columna és buida, `Counter(col).most_common(1)[0][0]` a `desplacament_columna` genera un `IndexError`.
+
+#### 2. Resposta incorrecta (Heurística de la lletra 'E')
+Assumir que la lletra més freqüent de cada columna és sempre la 'E' és fals en textos reals, on lletres com la 'A', 'S' o 'T' sovint la superen (en català, 'A' té un 14.5% i 'E' un 16.0%).
+En passar el **Criptograma C** per `original_ia.py`, el programa detecta $k=7$ però obté la clau errònia **`ISJTWAM`** en lloc de **`MONTSEC`** (només encerta la 'T'). Com a resultat, el text desxifrat és completament il·legible (`UQENQRNMBV...`).
+
+#### 3. Resposta aparentment raonable però injustificada (Tria de múltiples de clau)
+`longitud_clau` fa `if ic_mitja > millor_ic`. Com que qualsevol múltiple de la clau ($2k, 3k, \dots$) també forma columnes monoalfabètiques, la variància mostral en columnes més curtes fa que sovint un múltiple assoleixi un IC lleugerament superior per pur atzar.
+Per exemple, si una clau real té longitud 7 (com a `MONTSEC`) i per soroll estadístic s'obté $IC(7) = 0.0696$ i $IC(14) = 0.0710$, el programa de la IA tria automàticament **$k = 14$** només perquè té un IC més alt. Aquesta conclusió sembla raonable pel valor elevat de l'IC, però és injustificada: duplica innecessàriament la clau i divideix la mostra per la meitat en lloc d'escollir el període fonamental $k = 7$.
+
+### 3.3 Corregir-lo
+
+Hem implementat la versió corregida a `codi/corregit_ia.py` aplicant tres millores:
+
+1. **Robustesa:** A `index_coincidencia`, si $n < 2$ retornem `0.0`. A `longitud_clau`, limitem la cerca a $maxim = \min(maxim, \lfloor n/2 \rfloor)$ i calculem la mitjana ignorant columnes amb menys de 2 caràcters.
+2. **Període fonamental:** Entre els candidats amb $IC \ge 0.055$, triem el $k$ més petit que assoleixi com a mínim el 85% de l'IC màxim trobat.
+3. **Comparació completa de freqüències:** A `desplacament_columna`, carreguem `frequencies/catala.csv` i provem els 26 desplaçaments, triant el que minimitza la suma de diferències absolutes respecte a la distribució real del català en lloc de mirar només la 'E'.
+
+Amb aquests canvis, `corregit_ia.py` no falla amb textos curts, identifica sempre el període fonamental evitant múltiples espuris, i recupera exactament la clau `MONTSEC` i el text clar del Criptograma C.
+
+### 3.4 Pregunta final
+
+> **Suposeu que el programa obté:**
+> ```
+> IC (7) = 0.0696
+> IC (14) = 0.0710
+> ```
+> **El programa retorna automàticament `k = 14`. És correcta aquesta conclusió? Expliqueu com comprovaríeu si la clau té realment longitud 14 o si té un període fonamental més curt.**
+
+**No, la conclusió no és correcta.**
+
+Si una clau té longitud 7, les columnes a pas 14 també estan formades per lletres xifrades amb el mateix desplaçament ($i \equiv i+14 \pmod 7$). Per tant, el seu IC teòric també és el d'un text monoalfabètic (~0.07). La lleugera diferència entre 0.0696 i 0.0710 és pur soroll estadístic degut a tenir columnes amb la meitat de lletres. Triar $k=14$ és un sobreajust injustificat; cal buscar sempre el **període fonamental**.
+
+Per comprovar si la clau és de període 7 o 14:
+1. **Inspecció de la clau:** Si en desxifrar amb $k=14$ la clau té la forma $K_0 \dots K_6 K_0 \dots K_6$ (es repeteix a la segona meitat), el període real és clarament 7.
+2. **Kasiski:** Si entre les distàncies de patrons repetits hi ha múltiples senars de 7 (com 21, 35, 49...), la longitud no pot ser 14, ja que aquestes distàncies no són divisibles per 14.
+3. **IC creuat:** Calcular l'IC mutu entre la columna $i$ i la columna $i+7$. Si és alt (~0.07), totes dues comparteixen el mateix desplaçament i el període és 7.
+4. **Coherència lingüística:** Avaluar si la clau de 7 lletres forma una paraula amb sentit (com `MONTSEC`), mentre que duplicar-la no afegeix informació.
 
 ## Tasca 4
 
@@ -116,3 +178,10 @@ La clau era `TUTANKAMON` i el text desxifrat aquest:
 >LA TARDOR PORTA DIES CURTS I FREDS A LA PLAÇA DEL POBLE ELS NENS JUGUEN SENSE PARAR FINS QUE ES FA FOSC JUGANT AMB CINC XIQUES I FENT BROMES EL PALLASSO DE VIC PERD LA QUALITAT DEL XOU LES FAMILIES SURTEN A PASSEJAR PEL PARC I COMPREN PA CALENTA LA FLECA DEL CANTO LA NOSTRA AVIA FA SOPA DE VERDURES MENTRES ESCOLTA LA RADIO I FIX VICTOR PUJA DALT I QUAN SES FONDRA EL LLARG CAMI TROBA PERLES I JOIES DEMA SERA UN ALTRE DIA TRANQUIL I PLE DE PETITES ALEGRIES QUOTIDIAN ESPERA TOTHOM
 
 ## Conclusions
+
+Al llarg d'aquesta pràctica hem pogut estudiar empíricament com la criptografia clàssica es fonamenta en la lluita per amagar les regularitats estructurals i estadístiques del llenguatge:
+
+1. **Substitució monoalfabètica:** Tot i comptar amb un espai de claus enorme ($26! \approx 4 \times 10^{26}$) que fa impossible la força bruta, conserva íntegrament la distribució de freqüències i patrons del llenguatge d'origen. Això la fa immediatament vulnerable a l'anàlisi de freqüències i paraules curtes.
+2. **Substitució homofònica:** Repartir les lletres més freqüents entre diversos símbols aconsegueix aplanar l'histograma individual i baixar l'índex de coincidència. No obstant això, si es conserven els separadors de paraula, l'estructura sintàctica (longituds, patrons de repetició de bigrames i coherència lèxica) continua viva i permet recuperar el text de forma assistida.
+3. **Xifratge polialfabètic (Vigenère):** Difumina les freqüències globals acostant-les a una distribució uniforme, però la repetició periòdica de la clau introdueix una vulnerabilitat fatal: les posicions congruents mòdul la longitud de la clau esdevenen xifrats de Cèsar independents, explotables mitjançant Kasiski, l'índex de coincidència i la correlació de freqüències.
+4. **Auditoria d'eines automàtiques i ús de la IA:** Hem comprovat que un codi generat per IA que aparenta ser funcional pot contenir errors greus de disseny si es basa en simplificacions excessives (com suposar que la lletra més freqüent sempre és la 'E' o triar cegament el màxim d'IC ignorant el període fonamental). El coneixement teòric i la capacitat d'auditoria són imprescindibles per desenvolupar eines criptoanalítiques fiables i robustes.
