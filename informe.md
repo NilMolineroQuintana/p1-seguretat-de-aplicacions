@@ -1,4 +1,4 @@
-# Pràctica 1
+# Pràctica 1: Criptografia clàssica
 **Grup:** Guillem Alcoverro, Nil Molinero
 
 ## Tasca 1
